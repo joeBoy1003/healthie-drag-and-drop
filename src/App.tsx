@@ -41,10 +41,10 @@ function App() {
           if(isDone) {
             temp = moveTask(done, todo);
             setDone(temp.newSource);
-          } else {
+          } else if(doing.some(item => item.id === task.id)) {
             temp = moveTask(doing, todo);
             setDoing(temp.newSource);
-          }
+          } else return;
           setTodo(temp.newTarget);
           break;
 
@@ -54,10 +54,10 @@ function App() {
           if(isTodo) {
             temp = moveTask(todo, doing);
             setTodo(temp.newSource);
-          } else {
+          } else if(done.some(item => item.id === task.id)) {
             temp = moveTask(done, doing);
             setDone(temp.newSource);
-          }
+          } else return;
           setDoing(temp.newTarget);
           break;
 
@@ -67,10 +67,10 @@ function App() {
           if(isDoing) {
             temp = moveTask(doing, done);
             setDoing(temp.newSource);
-          } else {
+          } else if(todo.some(item => item.id === task.id)) {
             temp = moveTask(todo, done);
             setTodo(temp.newSource);
-          }
+          } else return;
           setDone(temp.newTarget);
           break;
 

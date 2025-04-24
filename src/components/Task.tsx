@@ -20,7 +20,7 @@ const TaskComponent: React.FC<TaskProps> = ({task}) => {
     return (
         <div 
             ref={dragRef} 
-            className={`p-2 m-2 border rounded ${isDragging ? 'opacity-50' : ''}`}
+            className={`py-2 my-2 bg-white shadow-md rounded ${isDragging ? 'opacity-50' : ''}`}
         >
             {task.title}
         </div>

@@ -23,3 +23,9 @@ export interface DragDropResult {
     newSource: Task[];
     newTarget: Task[];
 };
+
+export interface AddFormProps {
+    input: string;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onAddTask: (e: React.FormEvent<HTMLFormElement>) => void;
+};

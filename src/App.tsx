@@ -3,6 +3,7 @@ import './App.css'
 import { DragDropResult, Progress, Task } from './types';
 import Confetti from 'react-confetti';
 import DropZone from './components/DropZone';
+import AddForm from './components/AddForm';
 
 const initialTasks: Task[] = [
   { id: 1, title: 'Walk around' },
@@ -15,6 +16,9 @@ function App() {
   const [doing, setDoing] = useState<Task[]>([]);
   const [done, setDone] = useState<Task[]>([]);
   const [showConfetti, setShowConfetti] = useState(false);
+  
+  const [count, setCount] = useState(initialTasks.length);
+  const [input, setInput] = useState<string>('');
   let temp: DragDropResult;
 
   const handleDrop = useCallback(
@@ -83,9 +87,29 @@ function App() {
     }, [todo, doing, done]
   );
 
+  const handleAddTask = (e: any) => {
+    e.preventDefault();
+    const newTask = {
+      id: count + 1,
+      title: input,
+    };
+    setInput('');
+    setTodo((prev) => [...prev, newTask]);
+    setCount(count + 1);
+  };
+
+  const handleChange = (e: any) => {
+    setInput(e.target.value);
+  }
+
   return (
     <div className='flex flex-col items-center justify-center h-screen'>
       <h1 className='text-3xl font-bold mb-4'>Task Manager</h1>
+      <AddForm
+        input={input}
+        onAddTask={handleAddTask}
+        onChange={handleChange}
+      />
       <div className='flex min-w-[600px] space-x-4'>
         <DropZone onDrop={handleDrop} progress={Progress.TODO} tasks={todo} />
         <DropZone onDrop={handleDrop} progress={Progress.DOING} tasks={doing} />

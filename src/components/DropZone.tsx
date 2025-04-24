@@ -17,7 +17,7 @@ const DropZone: React.FC<DropZoneProps> = ({ progress, onDrop, tasks }) => {
 
     return (
         <div ref={dropRef} className="w-1/3 bg-gray-200 p-4 rounded">
-            <h2 className="text-xl font-semibold mb-2">{progress}</h2>
+            <h2 className="text-md text-left font-semibold mb-2">{progress.toUpperCase()}</h2>
             {
                 tasks.map((task) => (
                     <TaskComponent

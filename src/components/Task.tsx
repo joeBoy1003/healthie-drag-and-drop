@@ -1,32 +1,25 @@
 import React from "react";
-import { useDrag, useDrop } from "react-dnd";
-import { Task, TaskProps } from "../types";
+import { useDrag } from "react-dnd";
+import { TaskProps } from "../types";
 
-const TaskComponent: React.FC<TaskProps> = ({task, progress, onDrop}) => {
+const TaskComponent: React.FC<TaskProps> = ({task}) => {
     const [{isDragging}, drag] = useDrag({
         type: "Task",
-        item: { id: task.id },
+        item: task,
         collect: (monitor) => ({
             isDragging: !!monitor.isDragging(),
         }),
     });
 
-    const [, drop] = useDrop({
-        accept: "Task",
-        drop: (item: Task) => onDrop(item, progress),
-        collect: (monitor) => ({
-            isOver: !!monitor.isOver(),
-            canDrop: !!monitor.canDrop(),
-        }),
-    });
-
-    const dragDropRef = (node: HTMLDivElement | null) => {
-        if(node) drag(drop(node));
+    const dragRef = (node: HTMLDivElement | null) => {
+        if(node) {
+            drag(node);
+        }
     };
 
     return (
         <div 
-            ref={node => dragDropRef(node)} 
+            ref={dragRef} 
             className={`p-2 m-2 border rounded ${isDragging ? 'opacity-50' : ''}`}
         >
             {task.title}

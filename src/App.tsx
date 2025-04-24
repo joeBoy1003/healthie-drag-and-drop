@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import './App.css'
-import { Task } from './types';
+import { DragDropResult, Progress, Task } from './types';
 import Confetti from 'react-confetti';
-import TaskComponent from './components/Task';
+import DropZone from './components/DropZone';
 
 const initialTasks: Task[] = [
   { id: 1, title: 'Walk around' },
@@ -15,86 +15,84 @@ function App() {
   const [doing, setDoing] = useState<Task[]>([]);
   const [done, setDone] = useState<Task[]>([]);
   const [showConfetti, setShowConfetti] = useState(false);
+  let temp: DragDropResult;
 
-  const handleDrop = (task: Task, targetList: string) => {
-    if (targetList === 'done') {
-      setShowConfetti(true);
-      setTimeout(() => {
-        setShowConfetti(false);
-      }, 3000);
-    }
+  const handleDrop = useCallback(
+    (task: Task, targetList: string) => {
+      const moveTask = (sourceList: Task[], targetList: Task[]) => {
+        targetList.push(task);
+        const updatedSourceList = sourceList.filter(item => item.id !== task.id);
+        temp = { newSource: updatedSourceList, newTarget: targetList };
+        console.log("task", task);
+        console.log("targetList", targetList);
+        console.log("sourceList", sourceList);
+        console.log("res", temp);
+        return temp;
+      }
 
-    const moveTask = (sourceList: Task[], targetList: Task[]) => {
-      targetList.push(task);
-      const updatedSourceList = sourceList.filter(item => item.id !== task.id);
-      const res = { newSource: updatedSourceList, newTarget: targetList };
-      console.log(res);
-      return res;
-    }
+      switch (targetList) {
+        case Progress.TODO:
+          const isDone = done.some(item => item.id === task.id);
 
-    switch(targetList) {
-      case 'todo':
-        const newTodo = moveTask(doing, todo);
-        setTodo(newTodo.newTarget);
-        setDoing(newTodo.newSource);
-        break;
-      case 'doing':
-        const newDoing = moveTask(todo, doing);
-        setDoing(newDoing.newTarget);
-        setTodo(newDoing.newSource);
-        break;
-      case 'done':
-        const newDone = moveTask(doing, done);
-        setDone(newDone.newTarget);
-        setDoing(newDone.newSource);
-        break;
-      default:
-        break;
-    }
-  };
+          if(isDone) {
+            temp = moveTask(done, todo);
+            setDone(temp.newSource);
+          } else {
+            temp = moveTask(doing, todo);
+            setDoing(temp.newSource);
+          }
+          setTodo(temp.newTarget);
+          break;
+
+        case Progress.DOING:
+          const isTodo = todo.some(item => item.id === task.id);
+
+          if(isTodo) {
+            temp = moveTask(todo, doing);
+            setTodo(temp.newSource);
+          } else {
+            temp = moveTask(done, doing);
+            setDone(temp.newSource);
+          }
+          setDoing(temp.newTarget);
+          break;
+
+        case Progress.DONE:
+          const isDoing = doing.some(item => item.id === task.id);
+
+          if(isDoing) {
+            temp = moveTask(doing, done);
+            setDoing(temp.newSource);
+          } else {
+            temp = moveTask(todo, done);
+            setTodo(temp.newSource);
+          }
+          setDone(temp.newTarget);
+          break;
+
+        default:
+          break;
+      }
+
+      if (targetList === Progress.DONE) {
+        setShowConfetti(true);
+        setTimeout(() => {
+          setShowConfetti(false);
+        }, 5000);
+      }
+    }, [todo, doing, done]
+  );
 
   return (
     <div className='flex flex-col items-center justify-center h-screen'>
       <h1 className='text-3xl font-bold mb-4'>Task Manager</h1>
       <div className='flex min-w-[600px] space-x-4'>
-        <div className='w-1/3 bg-gray-200 p-4 rounded'>
-          <h2 className='text-xl font-semibold mb-2'>To Do</h2>
-          {todo.map(task => (
-            <TaskComponent 
-              key={task.id} 
-              task={task} 
-              progress="todo" 
-              onDrop={handleDrop}
-            />
-          ))}
-        </div>
-        
-        <div className='w-1/3 bg-gray-200 p-4 rounded'>
-          <h2 className='text-xl font-semibold mb-2'>Doing</h2>
-          {doing.map(task => (
-            <TaskComponent 
-              key={task.id} 
-              task={task} 
-              progress="doing" 
-              onDrop={handleDrop}
-            />
-          ))}
-        </div>
-        
-        <div className='w-1/3 bg-gray-200 p-4 rounded'>
-          <h2 className='text-xl font-semibold mb-2'>Done</h2>
-          {done.map(task => (
-            <TaskComponent 
-              key={task.id} 
-              task={task} 
-              progress="done" 
-              onDrop={handleDrop}
-            />
-          ))}
-        </div>
-
-        { showConfetti && <Confetti /> }
+        <DropZone onDrop={handleDrop} progress={Progress.TODO} tasks={todo} />
+        <DropZone onDrop={handleDrop} progress={Progress.DOING} tasks={doing} />
+        <DropZone onDrop={handleDrop} progress={Progress.DONE} tasks={done} />
       </div>
+
+      {showConfetti && <Confetti />}
     </div>
   )
 }
